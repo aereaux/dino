@@ -74,6 +74,8 @@ window.dino-main .dino-sidebar > frame {
     border-bottom: 1px solid @borders;
 }
 
+/* Message */
+
 .message-box {
     transition: background .05s ease;
 }
@@ -89,6 +91,19 @@ window.dino-main .dino-conversation .message-box.edit-mode {
 
 window.dino-main .dino-conversation .message-box.edit-mode:hover {
     background: alpha(@theme_selected_bg_color, 0.12);
+}
+
+/* Message Menu */
+
+.message-menu-box {
+    background-color: @theme_base_color;
+    border: 1px solid alpha(@theme_fg_color, 0.15);
+    border-radius: 5px;
+}
+
+.message-menu-button {
+    padding: 6px;
+    border: none;
 }
 
 window.dino-main .dino-conversation .message-box.error {
@@ -166,6 +181,8 @@ window.dino-main .dino-file-overlay {
     border: 1px solid alpha(black, 0.2);
     box-shadow: 0 2px 3px alpha(black, 0.1);
 }
+
+/* Text input */
 
 window.dino-main .dino-chatinput frame box {
     background: transparent;
@@ -369,4 +386,30 @@ box.dino-input-error label.input-status-highlight-once {
 
 .dino-call-window .own-video {
     box-shadow: 0 0 2px 0 rgba(0,0,0,0.5);
+
+/* Reactions */
+
+window.dino-main .reaction-box {
+    border: 1px solid transparent;
+    padding: 3px 5px ;
+    border-radius: 10px;
+    background-color: alpha(@theme_fg_color, 0.05);
+    background-image: none;
+    box-shadow: none;
+    min-height: 0;
+    min-width: 0;
+}
+
+window.dino-main .reaction-box.own-reaction {
+    color: mix(@theme_selected_bg_color, @theme_fg_color, 0.4);
+    border-color: @theme_selected_bg_color;
+    background-color: alpha(@theme_selected_bg_color, 0.05);
+}
+
+window.dino-main .reaction-box:hover {
+    background-color: alpha(@theme_fg_color, 0.1);
+}
+
+window.dino-main .own-reaction:hover {
+    background-color: alpha(@theme_selected_bg_color, 0.2);
 }

@@ -45,19 +45,10 @@
                                                             <property name="can_focus">False</property>
                                                             <property name="halign">end</property>
                                                             <property name="valign">start</property>
-                                                            <child>
-                                                                <object class="GtkButton" id="button1">
-                                                                    <property name="vexpand">False</property>
-                                                                    <property name="halign">end</property>
-                                                                    <property name="valign">end</property>
-                                                                    <child>
-                                                                        <object class="GtkImage" id="button1_icon">
-                                                                            <property name="icon-size">1</property>
-                                                                            <property name="visible">True</property>
-                                                                        </object>
-                                                                    </child>
-                                                                </object>
-                                                            </child>
+
+                                                            <style>
+                                                                <class name="message-menu-box"/>
+                                                            </style>
                                                         </object>
                                                     </child>
                                             </object>

@@ -13,11 +13,16 @@ public class MessageMetaItem : ContentMetaItem {
     private StreamInteractor stream_interactor;
     private MessageItemWidget message_item_widget;
     private MessageItem message_item;
+    private bool supports_reaction;
 
     public MessageMetaItem(ContentItem content_item, StreamInteractor stream_interactor) {
         base(content_item);
         message_item = content_item as MessageItem;
         this.stream_interactor = stream_interactor;
+
+        stream_interactor.get_module(Reactions.IDENTITY).conversation_supports_reactions.begin(message_item.conversation, (_, res) => {
+            supports_reaction = stream_interactor.get_module(Reactions.IDENTITY).conversation_supports_reactions.end(res);
+        });
     }
 
     public override Object? get_widget(Plugins.WidgetType type) {
@@ -43,17 +48,31 @@ public class MessageMetaItem : ContentMetaItem {
 
     public override Gee.List<Plugins.MessageAction>? get_item_actions(Plugins.WidgetType type) {
         if (content_item as FileItem != null) return null;
+        if (in_edit_mode) return null;
 
-        bool allowed = stream_interactor.get_module(MessageCorrection.IDENTITY).is_own_correction_allowed(message_item.conversation, message_item.message);
         Gee.List<Plugins.MessageAction> actions = new ArrayList<Plugins.MessageAction>();
-        if (allowed && !in_edit_mode) {
+
+        if (supports_reaction) {
+            Plugins.MessageAction action2 = new Plugins.MessageAction();
+            action2.icon_name = "dino-emoticon-add-symbolic";
+            EmojiChooser chooser = new EmojiChooser();
+            chooser.emoji_picked.connect((emoji) => {
+                stream_interactor.get_module(Reactions.IDENTITY).add_reaction(message_item.conversation, message_item, emoji);
+            });
+            action2.popover = chooser;
+            actions.add(action2);
+        }
+
+        bool edit_allowed = stream_interactor.get_module(MessageCorrection.IDENTITY).is_own_correction_allowed(message_item.conversation, message_item.message);
+        if (edit_allowed) {
             Plugins.MessageAction action1 = new Plugins.MessageAction();
             action1.icon_name = "document-edit-symbolic";
-            action1.callback = (button, content_meta_item_activated, widget) => {
+            action1.callback = () => {
                 this.in_edit_mode = true;
             };
             actions.add(action1);
         }
+
         return actions;
     }
 

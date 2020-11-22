@@ -15,8 +15,6 @@ public class ConversationView : Box, Plugins.ConversationItemCollection, Plugins
     [GtkChild] public unowned ScrolledWindow scrolled;
     [GtkChild] private unowned Revealer notification_revealer;
     [GtkChild] private unowned Box message_menu_box;
-    [GtkChild] private unowned Button button1;
-    [GtkChild] private unowned Image button1_icon;
     [GtkChild] private unowned Box notifications;
     [GtkChild] private unowned Box main;
     [GtkChild] private unowned EventBox main_event_box;
@@ -31,6 +29,7 @@ public class ConversationView : Box, Plugins.ConversationItemCollection, Plugins
     private Gee.List<ConversationItemSkeleton> item_skeletons = new Gee.ArrayList<ConversationItemSkeleton>();
     private ContentProvider content_populator;
     private SubscriptionNotitication subscription_notification;
+    private Gee.LinkedList<Button> message_menu_buttons = new Gee.LinkedList<Button>();
 
     private double? was_value;
     private double? was_upper;
@@ -76,11 +75,6 @@ public class ConversationView : Box, Plugins.ConversationItemCollection, Plugins
         main_event_box.events = EventMask.POINTER_MOTION_MASK;
         main_event_box.motion_notify_event.connect(on_motion_notify_event);
 
-        button1.clicked.connect(() => {
-            current_meta_item.get_item_actions(Plugins.WidgetType.GTK)[0].callback(button1, current_meta_item, currently_highlighted.widget);
-            update_message_menu();
-        });
-
         return this;
     }
 
@@ -110,7 +104,6 @@ public class ConversationView : Box, Plugins.ConversationItemCollection, Plugins
     private bool on_leave_notify_event(Gdk.EventCrossing event) {
         if (currently_highlighted != null) {
             currently_highlighted.unset_state_flags(StateFlags.PRELIGHT);
-            currently_highlighted = null;
         }
         message_menu_box.visible = false;
         return false;
@@ -149,9 +142,7 @@ public class ConversationView : Box, Plugins.ConversationItemCollection, Plugins
         if (currently_highlighted != null) currently_highlighted.unset_state_flags(StateFlags.PRELIGHT);
 
         if (w == null) {
-            currently_highlighted = null;
-            current_meta_item = null;
-            update_message_menu();
+            message_menu_box.visible = false;
             return;
         }
 
@@ -179,16 +170,55 @@ public class ConversationView : Box, Plugins.ConversationItemCollection, Plugins
     }
 
     private void update_message_menu() {
-        if (current_meta_item == null) {
+        if (current_meta_item == null) return;
+
+        var actions = current_meta_item.get_item_actions(Plugins.WidgetType.GTK);
+        if (actions == null || actions.size == 0) {
             message_menu_box.visible = false;
             return;
         }
 
-        var actions = current_meta_item.get_item_actions(Plugins.WidgetType.GTK);
-        message_menu_box.visible = actions != null && actions.size > 0;
-        if (actions != null && actions.size == 1) {
-            button1.visible = true;
-            button1_icon.set_from_icon_name(actions[0].icon_name, IconSize.SMALL_TOOLBAR);
+        message_menu_box.visible = true;
+
+        // TODO recycle buttons more generally
+        if (actions.size == 1 && message_menu_buttons.size == 1) {
+            MenuButton? menu_button = message_menu_buttons[0] as MenuButton;
+            if (actions[0].popover != null && menu_button != null) {
+                menu_button.set_popover((Widget)actions[0].popover);
+                return;
+            }
+        }
+
+        message_menu_box.foreach(message_menu_box.remove);
+        message_menu_buttons.clear();
+
+        if (actions != null) {
+            foreach (Plugins.MessageAction action in actions) {
+                Image image = new Image.from_icon_name(action.icon_name, IconSize.SMALL_TOOLBAR) { visible=true };
+                Button? button = null;
+                if (action.popover != null) {
+                    MenuButton menu_button = new MenuButton() { visible=true };
+                    menu_button.set_image(image);
+                    menu_button.set_popover((Widget)action.popover);
+                    button = menu_button;
+                    menu_button.toggled.connect(() => {
+                        if (menu_button.active) {
+                            currently_highlighted.set_state_flags(StateFlags.PRELIGHT, true);
+                            message_menu_box.visible = true;
+                        }
+                    });
+                } else {
+                    button = new Button() { visible=true };
+                    button.set_image(image);
+                    button.clicked.connect(() => {
+                        action.callback();
+                    });
+                }
+                button.relief = ReliefStyle.NONE;
+                button.get_style_context().add_class("message-menu-button");
+                message_menu_box.add(button);
+                message_menu_buttons.add(button);
+            }
         }
     }
 

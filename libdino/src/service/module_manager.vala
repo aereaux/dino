@@ -70,6 +70,7 @@ public class ModuleManager {
             module_map[account].add(new StreamError.Module());
             module_map[account].add(new Xep.InBandRegistration.Module());
             module_map[account].add(new Xep.HttpFileUpload.Module());
+            module_map[account].add(new Xep.Reactions.Module());
             module_map[account].add(new Xep.Socks5Bytestreams.Module());
             module_map[account].add(new Xep.InBandBytestreams.Module());
             module_map[account].add(new Xep.Jingle.Module());
@@ -84,6 +85,7 @@ public class ModuleManager {
             module_map[account].add(new Xep.Muji.Module());
             module_map[account].add(new Xep.CallInvites.Module());
             module_map[account].add(new Xep.Coin.Module());
+            module_map[account].add(new Xep.OccupantIds.Module());
             initialize_account_modules(account, module_map[account]);
         }
     }

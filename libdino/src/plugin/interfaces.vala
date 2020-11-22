@@ -150,10 +150,11 @@ public abstract class MetaConversationItem : Object {
     public abstract Gee.List<MessageAction>? get_item_actions(WidgetType type);
 }
 
-public delegate void MessageActionEvoked(Object button, Plugins.MetaConversationItem evoked_on, Object widget);
+public delegate void MessageActionEvoked();
 public class MessageAction : Object {
     public string icon_name;
-    public MessageActionEvoked callback;
+    public Object? popover;
+    public MessageActionEvoked? callback;
 }
 
 public abstract class MetaConversationNotification : Object {

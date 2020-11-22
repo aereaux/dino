@@ -19,6 +19,7 @@ public class ConversationItemSkeleton : EventBox {
     public Entities.Message.Marked item_mark { get; set; }
     public ContentMetaItem? content_meta_item = null;
     public Widget? widget = null;
+    private ReactionsController? reactions_controller = null;
 
     private Box image_content_box = new Box(Orientation.HORIZONTAL, 8) { visible=true };
     private Box header_content_box = new Box(Orientation.VERTICAL, 0) { visible=true };
@@ -61,6 +62,15 @@ public class ConversationItemSkeleton : EventBox {
         this.notify["last-group-item"].connect(update_margin);
 
         update_margin();
+
+        ContentMetaItem? content_meta_item = item as ContentMetaItem;
+        if (content_meta_item != null) {
+            reactions_controller = new ReactionsController(conversation, content_meta_item.content_item, stream_interactor);
+            reactions_controller.box_activated.connect((widget) => {
+                header_content_box.add(widget);
+            });
+            reactions_controller.init();
+        }
     }
 
     private void update_margin() {

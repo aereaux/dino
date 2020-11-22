@@ -19,6 +19,7 @@ set(RESOURCE_LIST
     icons/dino-changes-prevent-symbolic.svg
     icons/dino-conversation-list-placeholder-arrow.svg
     icons/dino-double-tick-symbolic.svg
+    icons/dino-emoticon-add-symbolic.svg
     icons/dino-emoticon-symbolic.svg
     icons/dino-qr-code-symbolic.svg
     icons/dino-security-high-symbolic.svg
@@ -173,6 +174,7 @@ SOURCES
     src/ui/conversation_content_view/file_image_widget.vala
     src/ui/conversation_content_view/file_widget.vala
     src/ui/conversation_content_view/message_widget.vala
+    src/ui/conversation_content_view/reactions_widget.vala
     src/ui/conversation_content_view/subscription_notification.vala
 
     src/ui/conversation_titlebar/call_entry.vala
