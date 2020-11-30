@@ -102,7 +102,7 @@ public class Reactions : StreamInteractionModule, Object {
             stream.get_module(Xmpp.Xep.Reactions.Module.IDENTITY).send_reaction(stream, conversation.counterpart, "chat", message.stanza_id, reactions);
             var datetime_now = new DateTime.now();
             long now_long = (long) (datetime_now.to_unix() * 1000 + datetime_now.get_microsecond());
-            save_chat_reaction(conversation.account, conversation.account.bare_jid, content_item.id, now_long, reactions);
+            save_chat_reactions(conversation.account, conversation.account.bare_jid, content_item.id, now_long, reactions);
         }
     }
 
@@ -303,38 +303,32 @@ public class Reactions : StreamInteractionModule, Object {
         }
 
         // Notify about reaction changes
-        var matching_reactions = new ArrayList<string>();
-        for (int i = 0; i < current_reactions.size; i++) {
-            if (reactions.contains(current_reactions[i])) {
-                matching_reactions.add(current_reactions[i]);
-            }
-        }
         Jid signal_jid = jid;
         if (stanza.type_ == MessageStanza.TYPE_GROUPCHAT &&
                 signal_jid.equals(stream_interactor.get_module(MucManager.IDENTITY).get_own_jid(jid, account))) {
             signal_jid = account.bare_jid;
         }
         foreach (string current_reaction in current_reactions) {
-            if (!matching_reactions.contains(current_reaction)) {
+            if (!reactions.contains(current_reaction)) {
                 reaction_removed(account, content_item_id, signal_jid, current_reaction);
             }
         }
-        foreach (string reaction in reactions) {
-            if (!matching_reactions.contains(reaction)) {
-                reaction_added(account, content_item_id, signal_jid, reaction);
+        foreach (string new_reaction in reactions) {
+            if (!current_reactions.contains(new_reaction)) {
+                reaction_added(account, content_item_id, signal_jid, new_reaction);
             }
         }
 
         // Save reactions
 
         if (stanza.type_ == MessageStanza.TYPE_CHAT) {
-            save_chat_reaction(account, jid, content_item_id, reaction_time_long, reactions);
+            save_chat_reactions(account, jid, content_item_id, reaction_time_long, reactions);
         } else if (stanza.type_ == MessageStanza.TYPE_GROUPCHAT) {
-            save_muc_reaction(account, occupant_id, jid, content_item_id, reaction_time_long, reactions);
+            save_muc_reactions(account, occupant_id, jid, content_item_id, reaction_time_long, reactions);
         }
     }
 
-    private void save_chat_reaction(Account account, Jid jid, int content_item_id, long reaction_time, Gee.List<string> reactions) {
+    private void save_chat_reactions(Account account, Jid jid, int content_item_id, long reaction_time, Gee.List<string> reactions) {
         var emoji_builder = new StringBuilder();
         for (int i = 0; i < reactions.size; i++) {
             if (i != 0) emoji_builder.append(",");
@@ -350,7 +344,7 @@ public class Reactions : StreamInteractionModule, Object {
                 .perform();
     }
 
-    private void save_muc_reaction(Account account, string occupant_id, Jid jid, int content_item_id, long reaction_time, Gee.List<string> reactions) {
+    private void save_muc_reactions(Account account, string occupant_id, Jid jid, int content_item_id, long reaction_time, Gee.List<string> reactions) {
         int jid_id = db.get_jid_id(jid);
 
         var emoji_builder = new StringBuilder();
